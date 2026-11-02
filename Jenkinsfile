@@ -44,8 +44,18 @@ pipeline {
                 sh 'docker build -t student-management:latest .'
             }
         }
-    }
 
+	stage('Deploy to AKS using Ansible') {
+    	    steps {
+                echo 'Deploying application to AKS using Ansible'
+                sh '''
+                     cd "$WORKSPACE"
+                     ansible-playbook -i localhost, -c local ansible/deploy.yml
+        	'''
+    	    }
+	}
+    }
+        
     post {
         success {
             echo 'CI/CD Pipeline completed successfully!'
