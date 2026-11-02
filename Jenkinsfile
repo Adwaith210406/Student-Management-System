@@ -28,6 +28,19 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Analysing code quality'
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                    /usr/bin/mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
+                    -Dsonar.projectKey=student-management \
+                    -Dsonar.projectName="Student Management System"
+                    '''
+                }
+            }
+        }
+
         stage('Package') {
             steps {
                 echo 'Packaging the application'
