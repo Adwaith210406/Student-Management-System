@@ -1,9 +1,13 @@
 
 pipeline {
     agent any
-    options { timestamps() }
+
+    options {
+        timestamps()
+    }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -28,8 +32,8 @@ pipeline {
                     sh '''
                         /usr/bin/mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
                         -Dsonar.projectKey=student-management \
-                        -Dsonar.projectName="Student Management System"
-			-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                        -Dsonar.projectName="Student Management System" \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     '''
                 }
             }
@@ -65,6 +69,7 @@ pipeline {
         stage('Deploy to AKS using Ansible') {
             steps {
                 echo 'Deploying application to AKS using Ansible'
+
                 sh '''
                     cd "$WORKSPACE"
                     ansible-playbook -i localhost, -c local ansible/deploy.yml
@@ -77,6 +82,7 @@ pipeline {
         success {
             echo 'CI/CD Pipeline completed successfully!'
         }
+
         failure {
             echo 'Pipeline failed. Check console output.'
         }
