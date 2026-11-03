@@ -43,19 +43,39 @@ pipeline {
             steps {
                 sh 'docker build -t student-management:latest .'
             }
-        }
 
-	stage('Deploy to AKS using Ansible') {
-    	    steps {
+    stage('Docker Build and Push to ACR') {
+            steps {
+            withCredentials([usernamePassword(
+                credentialsId: 'acr-credentials',
+                usernameVariable: 'ACR_USER',
+                passwordVariable: 'ACR_PASS'
+            )]) {
+                sh '''
+                    docker build -t student-management:latest .
+                    docker tag student-management:latest studentmgmtacr27901.azurecr.io/student-management:latest
+
+                    echo "$ACR_PASS" | docker login studentmgmtacr27901.azurecr.io -u "$ACR_USER" --password-stdin
+
+                    docker push studentmgmtacr27901.azurecr.io/student-management:latest
+
+                    docker logout studentmgmtacr27901.azurecr.io
+                '''
+                }
+            }
+    }
+
+    stage('Deploy to AKS using Ansible') {
+            steps {
                 echo 'Deploying application to AKS using Ansible'
                 sh '''
                      cd "$WORKSPACE"
                      ansible-playbook -i localhost, -c local ansible/deploy.yml
-        	'''
-    	    }
-	}
+            '''
+            }
     }
-        
+    }
+
     post {
         success {
             echo 'CI/CD Pipeline completed successfully!'
