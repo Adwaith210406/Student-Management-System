@@ -84,6 +84,6 @@ public class StudentController {
     // Health check
     @GetMapping("/health")
     public String health() {
-        return "Student Management API is running!";
+        return "Student Management API is flying!";
     }
 }
