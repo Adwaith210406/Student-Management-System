@@ -1,3 +1,4 @@
+
 package com.example.student;
 
 import org.springframework.http.HttpStatus;
@@ -16,40 +17,56 @@ public class StudentController {
         this.studentRepository = studentRepository;
     }
 
+    // Convert Student entity to StudentDTO
+    private StudentDTO convertToDTO(Student student) {
+        return new StudentDTO(student.getId(), student.getName());
+    }
+
     // Get all students
     @GetMapping
-    public List<Student> getStudents() {
-        return studentRepository.findAll();
+    public List<StudentDTO> getStudents() {
+        return studentRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     // Get a student by ID
     @GetMapping("/{id}")
-    public Student getStudent(@PathVariable Long id) {
-        return studentRepository.findById(id)
+    public StudentDTO getStudent(@PathVariable Long id) {
+        Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Student not found"));
+
+        return convertToDTO(student);
     }
 
     // Add a new student
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Student addStudent(@RequestBody Student student) {
-        return studentRepository.save(student);
+    public StudentDTO addStudent(@RequestBody StudentDTO studentDTO) {
+        Student student = new Student(studentDTO.getName());
+
+        Student savedStudent = studentRepository.save(student);
+
+        return convertToDTO(savedStudent);
     }
 
     // Update an existing student
     @PutMapping("/{id}")
-    public Student updateStudent(
+    public StudentDTO updateStudent(
             @PathVariable Long id,
-            @RequestBody Student updatedStudent) {
+            @RequestBody StudentDTO updatedStudentDTO) {
 
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Student not found"));
 
-        student.setName(updatedStudent.getName());
+        student.setName(updatedStudentDTO.getName());
 
-        return studentRepository.save(student);
+        Student savedStudent = studentRepository.save(student);
+
+        return convertToDTO(savedStudent);
     }
 
     // Delete a student
