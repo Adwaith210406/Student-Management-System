@@ -18,7 +18,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh '/usr/bin/mvn test'
+                sh '/usr/bin/mvn test jacoco:report'
             }
         }
 
@@ -29,6 +29,7 @@ pipeline {
                         /usr/bin/mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
                         -Dsonar.projectKey=student-management \
                         -Dsonar.projectName="Student Management System"
+			-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     '''
                 }
             }
