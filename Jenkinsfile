@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
     options { timestamps() }
@@ -25,9 +26,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                    /usr/bin/mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
-                    -Dsonar.projectKey=student-management \
-                    -Dsonar.projectName="Student Management System"
+                        /usr/bin/mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
+                        -Dsonar.projectKey=student-management \
+                        -Dsonar.projectName="Student Management System"
                     '''
                 }
             }
@@ -39,41 +40,36 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build and Push to ACR') {
             steps {
-                sh 'docker build -t student-management:latest .'
-            }
+                withCredentials([usernamePassword(
+                    credentialsId: 'acr-credentials',
+                    usernameVariable: 'ACR_USER',
+                    passwordVariable: 'ACR_PASS'
+                )]) {
+                    sh '''
+                        docker build -t student-management:latest .
+                        docker tag student-management:latest studentmgmtacr27901.azurecr.io/student-management:latest
 
-    stage('Docker Build and Push to ACR') {
-            steps {
-            withCredentials([usernamePassword(
-                credentialsId: 'acr-credentials',
-                usernameVariable: 'ACR_USER',
-                passwordVariable: 'ACR_PASS'
-            )]) {
-                sh '''
-                    docker build -t student-management:latest .
-                    docker tag student-management:latest studentmgmtacr27901.azurecr.io/student-management:latest
+                        echo "$ACR_PASS" | docker login studentmgmtacr27901.azurecr.io -u "$ACR_USER" --password-stdin
 
-                    echo "$ACR_PASS" | docker login studentmgmtacr27901.azurecr.io -u "$ACR_USER" --password-stdin
+                        docker push studentmgmtacr27901.azurecr.io/student-management:latest
 
-                    docker push studentmgmtacr27901.azurecr.io/student-management:latest
-
-                    docker logout studentmgmtacr27901.azurecr.io
-                '''
+                        docker logout studentmgmtacr27901.azurecr.io
+                    '''
                 }
             }
-    }
+        }
 
-    stage('Deploy to AKS using Ansible') {
+        stage('Deploy to AKS using Ansible') {
             steps {
                 echo 'Deploying application to AKS using Ansible'
                 sh '''
-                     cd "$WORKSPACE"
-                     ansible-playbook -i localhost, -c local ansible/deploy.yml
-            '''
+                    cd "$WORKSPACE"
+                    ansible-playbook -i localhost, -c local ansible/deploy.yml
+                '''
             }
-    }
+        }
     }
 
     post {
