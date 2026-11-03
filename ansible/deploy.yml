@@ -14,6 +14,9 @@
     - name: Deploy Student Management application
       command: kubectl apply -f "{{ playbook_dir }}/../k8s/app.yaml"
 
+    - name: Restart application to pull latest Docker image
+      command: kubectl rollout restart deployment/student-management
+
     - name: Wait for application deployment
       command: kubectl rollout status deployment/student-management --timeout=180s
 
