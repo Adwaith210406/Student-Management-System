@@ -99,7 +99,7 @@ class StudentControllerTest {
         mockMvc.perform(get("/students/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
-                        "Student Management API is running!"
+                        "Student Management API is flying!"
                 ));
     }
 
