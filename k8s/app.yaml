@@ -19,7 +19,10 @@ spec:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql:3306/student_management
+              valueFrom:
+                configMapKeyRef:
+                  name: student-management-config
+                  key: SPRING_DATASOURCE_URL
             - name: SPRING_DATASOURCE_USERNAME
               value: studentuser
             - name: SPRING_DATASOURCE_PASSWORD
@@ -39,4 +42,3 @@ spec:
   ports:
     - port: 80
       targetPort: 8080
-
